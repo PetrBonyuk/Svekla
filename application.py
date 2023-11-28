@@ -7,15 +7,23 @@ Created on Mon Nov 27 23:16:34 2023
 import algorythm as alg
 import tkinter
 from tkinter import *
+from tkinter import ttk 
 
 def calculate():
     w = alg.worker(filename_box.get())
-    res, rows, columns, P = w.calculate()
+    option = combobox.get()
+
+    res, rows, columns, P = w.calculate(option=="Maximize")
     P=[["{:.3f}".format(xi) for xi in x] for x in P]
     for i in range(len(rows)):
         P[rows[i]][columns[i]]= "["+P[rows[i]][columns[i]]+"]"
-    
-    result_text = "\n максимальный объем сахара: "+ str(res)+"\n оптимальный план переработки: "
+        
+    result_text =""
+    if option=="Maximize":
+        result_text+="\n максимальный объем сахара: "
+    else:
+        result_text+="\n минимальный объем сахара: "
+    result_text += str(res)+"\n оптимальный план переработки: "
     
     result_box.delete(index1="1.0",index2="5.0")
     result_box.insert(index = "1.0", chars = result_text)
@@ -51,11 +59,16 @@ window.geometry('800x500')
 lbl = Label(window, text="filename:")  
 lbl.grid(column =0, row =0, pady=20)
 filename_box = Entry(window, width=20)
-filename_box.grid(column=1, row=0, padx = 10, pady=0)  
+filename_box.grid(column=1, row=0, )  
 
 result_box = Text(window, height=3, width=60)
 result_box.grid(column=1, row = 2)
 
 calculate_btn = Button(window, text="calculate", command=calculate)  
-calculate_btn.grid(column=2, row=0)  
+calculate_btn.grid(column=3, row=0) 
+
+options = ["Maximize", "Minimize"]
+combobox = ttk.Combobox(values=options)
+combobox.grid(column=2, row=0)
+combobox.current(1)
 window.mainloop()

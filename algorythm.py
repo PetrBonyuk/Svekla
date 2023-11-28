@@ -38,16 +38,17 @@ class worker(object):
             array = np.array(Pt)
             transposed_array = array.T
             self.P = transposed_array.tolist()
+            if self.task==1:
+                return
     
     
-    
-    def base_case(self):
-        rows, columns = scipy.optimize.linear_sum_assignment(cost_matrix=self.P, maximize=True)
+    def base_case(self, _maximize):
+        rows, columns = scipy.optimize.linear_sum_assignment(cost_matrix=self.P, maximize=_maximize)
         res = [self.P[rows[i]][columns[i]] for i in range(self.N)]
         return sum(res), rows, columns, self.P
     
-    def calculate(self):
+    def calculate(self, _maximize=True):
         match self.task:
             case 1:
-                return self.base_case()
+                return self.base_case(_maximize)
     
