@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import csv_generate
@@ -15,37 +16,47 @@ def run_experiment():
     mid2 = float(mid2_entry.get())
     disp2 = float(disp2_entry.get())
 
-    res1, res2, res3, res4 = 0, 0, 0, 0
+    arrayres1 = []
+    arrayres2 = []
+    arrayres3 = []
+    arrayres4 = []
 
-    for i in range(count):
-        print(i)
-        csv_generate.generate_test_data(
-            "test", Nsize, V, mid1, disp1, mid2, disp2)
-        w = alg.worker("test")
-        res1 += w.calculate(_maximize=True, _algorythm=1)[0]
-        res2 += w.calculate(_maximize=False, _algorythm=1)[0]
-        res3 += w.calculate(_maximize=True, _algorythm=2)[0]
-        res4 += w.calculate(_maximize=False, _algorythm=2)[0]
+    for N in range(1, Nsize + 1):
+        print(N)
+        res1, res2, res3, res4 = 0, 0, 0, 0
 
-    res1 /= count
-    res2 /= count
-    res3 /= count
-    res4 /= count
+        for i in range(count):
+            csv_generate.generate_test_data(
+                "test", N, V, mid1, disp1, mid2, disp2)
+            w = alg.worker("test")
+            res1 += w.calculate(_maximize=True, _algorythm=1)[0]
+            res2 += w.calculate(_maximize=False, _algorythm=1)[0]
+            res3 += w.calculate(_maximize=True, _algorythm=2)[0]
+            res4 += w.calculate(_maximize=False, _algorythm=2)[0]
 
-    results = [res1, res2, res3, res4]
-    algorithms = ['Венгерский (макс)', 'Венгерский (мин)', 'Жадный', 'Бережливый']
+        arrayres1.append(res1 / count)
+        arrayres2.append(res2 / count)
+        arrayres3.append(res3 / count)
+        arrayres4.append(res4 / count)
 
     # Очистка предыдущего графика (если есть)
     for widget in result_frame.winfo_children():
         widget.destroy()
 
-    # Создание нового графика
-    fig = Figure(figsize=(8, 5), dpi=100)
-    plot = fig.add_subplot(1, 1, 1)
-    plot.bar(algorithms, results, color=['blue', 'orange', 'green', 'red'] )
-    plot.set_xlabel('Алгоритмы')
-    plot.set_ylabel('Среднее значение')
-    plot.set_title('Сравнение результатов алгоритмов')
+    # Создание графика
+    fig = Figure(figsize=(12, 7), dpi=100)
+    ax = fig.add_subplot(1, 1, 1)
+    
+    ax.plot(range(1, Nsize + 1), arrayres1, label='Венгерский (макс)')
+    ax.plot(range(1, Nsize + 1), arrayres2, label='Венгерский (мин)')
+    ax.plot(range(1, Nsize + 1), arrayres3, label='Жадный')
+    ax.plot(range(1, Nsize + 1), arrayres4, label='Бережливый')
+
+    # Настройка графика
+    ax.set_xlabel('Размер матрицы')
+    ax.set_ylabel('Среднее значение')
+    ax.set_title('Динамика алгоритмов при разных размерах матрицы')
+    ax.legend()
 
     canvas = FigureCanvasTkAgg(fig, master=result_frame)
     canvas.draw()
@@ -63,6 +74,7 @@ frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 ttk.Label(frame, text="Количество экспериментов:").grid(row=0, column=0, padx=5, pady=5)
 count_entry = ttk.Entry(frame)
 count_entry.grid(row=0, column=1, padx=5, pady=5)
+
 
 ttk.Label(frame, text="Размер матрицы:").grid(row=1, column=0, padx=5, pady=5)
 Nsize_entry = ttk.Entry(frame)
