@@ -47,8 +47,53 @@ class worker(object):
         res = [self.P[rows[i]][columns[i]] for i in range(self.N)]
         return sum(res), rows, columns, self.P
     
-    def calculate(self, _maximize=True):
-        match self.task:
+    def greedy_case(self, _maximize):
+        if _maximize:
+            max_sum = 0
+            columns = list(range(self.N))
+            rows = []
+    
+            for i in columns:
+                max_elem = 0
+                cur_j = (set(range(self.N)) - set(rows)).pop()
+    
+                for j in set(range(self.N)) - set(rows):
+                    #print(self.P[j][i],":", max_elem)
+                    if self.P[j][i] > max_elem:
+                        cur_j = j
+                        max_elem = self.P[j][i]
+    
+                rows.append(cur_j)
+                max_sum += max_elem
+    
+            return max_sum, rows, columns, self.P
+        else:
+            min_sum = 0
+            columns = list(range(self.N))
+            rows = []
+    
+            for i in columns:
+                min_elem = float('inf')
+                cur_j = (set(range(self.N)) - set(rows)).pop()
+    
+                for j in set(range(self.N)) - set(rows):
+                    if self.P[j][i] < min_elem:
+                        cur_j = j
+                        min_elem = self.P[j][i]
+    
+                rows.append(cur_j)
+                min_sum += min_elem
+    
+            return min_sum, rows, columns, self.P
+            
+                    
+                
+    
+    def calculate(self, _maximize=True, _algorythm=1):
+        match _algorythm:
             case 1:
                 return self.base_case(_maximize)
+            case 2:
+                return self.greedy_case(_maximize)
+                
     
