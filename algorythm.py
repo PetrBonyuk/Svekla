@@ -85,15 +85,136 @@ class worker(object):
                 min_sum += min_elem
     
             return min_sum, rows, columns, self.P
-            
-                    
-                
+
+    def GkStrategy(self):
+        # Преобразование списка списков P в numpy массив
+        matrix = np.array(self.P)
+        batchCount, processingCount = matrix.shape
+        
+        # Инициализация переменных для хранения максимальной суммы и значений колонок
+        maxSum = 0
+        maxCol_val = []
+        maxBatches = []
     
-    def calculate(self, _maximize=True, _algorythm=1):
+        # Перебор значений для параметра k от 1 до 5
+        for k in range(1, 6):
+            selected_rows = [False] * batchCount  # Инициализация списка для отслеживания выбранных строк
+            col_values = []  # Инициализация списка для хранения значений колонок
+            batches = [None] * processingCount  # Инициализация списка для хранения номеров партий
+            summa = 0  # Инициализация суммы для текущей итерации
+    
+            # Перебор колонок матрицы с шагом k
+            for col in range(0, processingCount, k):
+                # Создание и сортировка списка значений для текущей колонки
+                col_elements = [(matrix[row][col], row) for row in range(batchCount) if not selected_rows[row]]
+                col_elements.sort(reverse=True)
+                
+                # Если оставшихся колонок меньше, чем k, уменьшаем k до оставшегося количества колонок
+                if (processingCount - col < k):
+                    k = processingCount - col
+    
+                # Выбор k элементов из текущей колонки
+                for i in range(k):
+                    value = matrix[col_elements[i][1], col + i]
+                    col_values.append(value)
+                    batches[col + i] = col_elements[i][1]  # Запоминаем номер партии
+                    selected_rows[col_elements[i][1]] = True
+                    summa += value
+    
+            # Обновление максимальной суммы и соответствующих значений колонок
+            if (maxSum < summa):
+                maxSum = summa
+                maxCol_val = col_values
+                maxBatches = batches
+    
+        # Возвращение максимальной суммы, номеров дней, номеров оптимальных партий и исходной матрицы
+        return maxSum, range(batchCount), maxBatches, self.P
+    
+    def TKGStrategy(self, nu):
+        # Преобразование списка списков P в numpy массив
+        matrix = np.array(self.P)
+        batchCount, processingCount = matrix.shape
+        results = []
+    
+        # Перебор значений для параметра k от 1 до (batchCount - nu + 2)
+        for k in range(1, (batchCount - nu + 2)):
+            selected_rows = [False] * batchCount  # Инициализация списка для отслеживания выбранных строк
+            col_values = []  # Инициализация списка для хранения значений колонок
+            batches = [None] * processingCount  # Инициализация списка для хранения номеров партий
+            total_sum = 0  # Инициализация суммы для текущей итерации
+    
+            # Перебор колонок матрицы
+            for col in range(processingCount):
+                if col <= nu - 1:
+                    col_elements = [(matrix[row][col], row) for row in range(batchCount) if not selected_rows[row]]
+                    col_elements.sort()
+                    value, remove_row = col_elements[k - 1]
+                else:
+                    max_value = float('-inf')
+                    for row in range(batchCount):
+                        if not selected_rows[row] and matrix[row][col] > max_value:
+                            max_value = matrix[row][col]
+                            remove_row = row
+                    value = max_value
+                selected_rows[remove_row] = True
+                col_values.append(value)
+                batches[col] = remove_row  # Запоминаем номер партии
+                total_sum += value
+    
+            results.append((total_sum, col_values, batches))
+    
+        # Находим результат с максимальной суммой
+        max_result = max(results, key=lambda x: x[0])
+        summa = max_result[0]
+        col_val = max_result[1]
+        batches = max_result[2]
+    
+        # Возвращение максимальной суммы, номеров дней, номеров оптимальных партий и исходной матрицы
+        return summa, range(batchCount), batches, self.P
+    
+    def CTGStrategy(self, nu):
+        matrix = np.array(self.P)
+        batchCount, processingCount = matrix.shape
+    
+        k = np.arange(1, nu)
+        g = batchCount - 2 * nu + 2 * k + 1
+        arrIndexes = g
+    
+        k = np.arange(nu, 2 * nu)
+        g = batchCount + 2 * nu - 2 * k
+        arrIndexes = np.append(arrIndexes, g)
+    
+        k = np.arange(2 * nu, batchCount + 1)
+        g = batchCount - k + 1
+        arrIndexes = np.append(arrIndexes, g) - 1
+    
+        sortedMatrix = matrix[matrix[:, 0].argsort()]
+    
+        arrBatchC = np.arange(batchCount)
+        resArr = []
+        batches = [None] * processingCount
+        for i, j in zip(arrBatchC, arrIndexes):
+            col_elements = [sortedMatrix[row, i] for row in range(batchCount)]
+            resArr.append(col_elements[j])
+            batches[i] = j
+    
+        summa = sum(resArr)
+    
+        return summa, range(batchCount), batches, self.P
+
+
+    
+    def calculate(self, _maximize=True, _algorythm=1, param  = 1):
         match _algorythm:
             case 1:
                 return self.base_case(_maximize)
             case 2:
                 return self.greedy_case(_maximize)
+            case 3:
+                return self.GkStrategy()
+            case 4:
+                return self.TKGStrategy(param)
+            case 5:
+                return self.CTGStrategy(param)
                 
     

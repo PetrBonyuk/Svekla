@@ -20,10 +20,15 @@ def run_experiment():
     arrayres2 = []
     arrayres3 = []
     arrayres4 = []
+    arrayres5 = []
+    arrayres6 = []
+    arrayres7 = []
+
+
 
     for N in range(1, Nsize + 1):
         print(N)
-        res1, res2, res3, res4 = 0, 0, 0, 0
+        res1, res2, res3, res4, res5, res6, res7 = 0, 0, 0, 0,0,0,0
 
         for i in range(count):
             csv_generate.generate_test_data(
@@ -33,13 +38,19 @@ def run_experiment():
             res2 += w.calculate(_maximize=False, _algorythm=1)[0]
             res3 += w.calculate(_maximize=True, _algorythm=2)[0]
             res4 += w.calculate(_maximize=False, _algorythm=2)[0]
+            res5 += w.calculate(_maximize=False, _algorythm=3)[0]
+            res6 += w.calculate(_maximize=False, _algorythm=4)[0]
+            res7 += w.calculate(_maximize=False, _algorythm=5)[0]
 
         arrayres1.append(res1 / count)
         arrayres2.append(res2 / count)
         arrayres3.append(res3 / count)
         arrayres4.append(res4 / count)
+        arrayres5.append(res5 / count)
+        arrayres6.append(res6 / count)
+        arrayres7.append(res7 / count)
 
-    # Очистка предыдущего графика (если есть)
+
     for widget in result_frame.winfo_children():
         widget.destroy()
 
@@ -51,6 +62,9 @@ def run_experiment():
     ax.plot(range(1, Nsize + 1), arrayres2, label='Венгерский (мин)')
     ax.plot(range(1, Nsize + 1), arrayres3, label='Жадный')
     ax.plot(range(1, Nsize + 1), arrayres4, label='Бережливый')
+    ax.plot(range(1, Nsize + 1), arrayres5, label='Gk')
+    ax.plot(range(1, Nsize + 1), arrayres6, label='TGK')
+    ax.plot(range(1, Nsize + 1), arrayres7, label='CTG')
 
     # Настройка графика
     ax.set_xlabel('Размер матрицы')

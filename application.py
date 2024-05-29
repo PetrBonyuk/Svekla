@@ -2,9 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 
-import algorythm as alg  # Предполагаю, что у вас есть файл algorithm.py с определением класса worker
+import algorythm as alg  
 
-alg_dict={"Венгерский алгоритм":1, "Жадный алгоритм":2, "Algorithm 3":3 }
+alg_dict={"Венгерский алгоритм":1, "Жадный/Бережливый алгоритм":2, "Gk":3, "TKG":4, "CTG":5 }
 
 
 class LinearOptimizationApp:
@@ -40,7 +40,7 @@ class LinearOptimizationApp:
         algorithm_frame.grid(row=1, column=3, columnspan=2, pady=10)
 
         ttk.Label(algorithm_frame, text="Algorithm:").grid(row=0, column=0)
-        self.algorithm_combobox = ttk.Combobox(algorithm_frame, values=["Венгерский алгоритм", "Жадный алгоритм", "Algorithm 3"])
+        self.algorithm_combobox = ttk.Combobox(algorithm_frame, values=["Венгерский алгоритм", "Жадный/Бережливый алгоритм", "Gk", "TKG", "CTG"])
         self.algorithm_combobox.grid(row=0, column=1)
         self.algorithm_combobox.current(0)
 
@@ -54,6 +54,10 @@ class LinearOptimizationApp:
         ttk.Label(result_frame, text="Result:").grid(row=0, column=0)
         self.result_text = tk.Text(result_frame, height=3, width=60)
         self.result_text.grid(row=0, column=1)
+        
+        self.param = "1"
+        ttk.Spinbox(result_frame, from_= 0,textvariable=self.param, to= 15).grid(row=1, column=2)
+        
 
         # Frame для отображения матрицы
         matrix_frame = ttk.Frame(self.root, padding="10")
@@ -73,7 +77,7 @@ class LinearOptimizationApp:
         algorithm = self.algorithm_combobox.get()
 
         w = alg.worker(filename)
-        res, rows, columns, P = w.calculate(option == "Maximize", _algorythm=alg_dict[algorithm])
+        res, rows, columns, P = w.calculate(option == "Maximize", _algorythm=alg_dict[algorithm], param = int(self.param))
         P = [["{:.3f}".format(xi) for xi in x] for x in P]
         for i in range(len(rows)):
             P[rows[i]][columns[i]] = "[" + P[rows[i]][columns[i]] + "]"
